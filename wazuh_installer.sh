@@ -1,6 +1,8 @@
 #!/bin/bash
+#Author:  Alexos (alexos at alexos dot org)
+#Date: 09/02/2023
 
-log=/tmp/wazuh.log
+log=~/wazuh.log
 
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
