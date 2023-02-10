@@ -1,6 +1,7 @@
 #!/bin/bash
 #Author:  Alexos (alexos at alexos dot org)
 #Date: 09/02/2023
+#Reference: https://documentation.wazuh.com/current/deployment-options/elastic-stack/all-in-one-deployment/index.html
 
 log=~/wazuh.log
 
