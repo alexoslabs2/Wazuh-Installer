@@ -5,6 +5,7 @@
 
 log=~/wazuh.log
 
+#Check sudo
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
    exit 1
@@ -12,11 +13,14 @@ fi
 
 clear
 apt-get update > $log 
+
+#Install Dependencies
 echo -ne Installing Dependencies...
 sleep 1
 echo Done
 apt-get install -y apt-transport-https zip unzip lsb-release curl gnupg sudo vim >> $log
 
+#Install ElasticSeach
 echo -e Installing and Configuring Elasticsearch...
 curl -s https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --no-default-keyring --keyring gnupg-ring:/usr/share/keyrings/elasticsearch.gpg --import && chmod 644 /usr/share/keyrings/elasticsearch.gpg 
 clear
@@ -42,7 +46,6 @@ systemctl start elasticsearch
 sleep 1
 echo Done 
 
-# Check service status
 echo -e Elasticsearch is $(systemctl status elasticsearch | grep "Active:" | awk '{print $3}')
 
 echo y | sudo /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto | grep "PASSWORD elastic" >> /tmp/elastic.txt 
@@ -53,6 +56,7 @@ curl -XGET https://localhost:9200 -u elastic:$ELASTICPASS -k
 sleep 2
 clear
 
+#Install Wazuh
 echo -e Installing Wazuh Server and Manager...
 curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --no-default-keyring --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import && chmod 644 /usr/share/keyrings/wazuh.gpg
 clear
@@ -68,11 +72,11 @@ systemctl start wazuh-manager
 sleep 1
 echo Done
 
-# Check service status
 echo -e Wazuh Manager is $(systemctl status wazuh-manager | grep "Active:" | awk '{print $3}')
 sleep 1
 clear
 
+#Install Filebeat
 echo -e Installing Filebeat...
 apt-get install -y filebeat=7.17.6 >> $log
 
@@ -98,7 +102,6 @@ systemctl start filebeat
 sleep 1
 echo Done
 
-# Check service status
 echo -e Filebeat is $(systemctl status filebeat| grep "Active:" | awk '{print $3}')
 
 echo -e Testing Filebeat...
@@ -106,6 +109,7 @@ filebeat test output
 sleep 2
 clear
 
+#Install Kibana
 echo Installing Kibana...
 apt-get install kibana=7.17.6 >> $log
 
@@ -138,12 +142,12 @@ systemctl start kibana
 sleep 1
 echo Done
 
-# Check service status
 echo -e Kibana is $(systemctl status kibana | grep "Active:" | awk '{print $3}')
 sleep 1
 clear
 echo -e Wazuh Installation Finished!
 
+# Infos
 echo -e "== Access Information =="
 echo URL: https://$(hostname -I)
 echo user: elastic
@@ -151,6 +155,7 @@ echo password: $(awk '{print $4}' /tmp/elastic.txt)
 
 echo -e "Warning: Change the password"
 
+#Cleaning 
 echo -ne Cleaning...
 sed -i "s/^deb/#deb/" /etc/apt/sources.list.d/wazuh.list
 sed -i "s/^deb/#deb/" /etc/apt/sources.list.d/elastic-7.x.list
